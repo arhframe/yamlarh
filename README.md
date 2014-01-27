@@ -88,6 +88,7 @@ arhframe:
 
 Import
 ---------
+Import are also hierarchical the last one imported will override the others.
 Use @import in your file: 
 
 file1.yml
