@@ -77,3 +77,40 @@ Output:
 
   ) 
 ```
+
+Object injection
+---------
+It use [snakeyml](https://code.google.com/p/snakeyaml/wiki/Documentation#Compact_Object_Notation) (yaml parser for java) style:
+```yml
+arhframe:
+  file: !! Arhframe.Util.File(test.php) #will instanciate this: Arhframe\Util\File('test.php') in file var after parsing
+```
+
+Import
+---------
+Use @import in your file: 
+
+file1.yml
+```yml
+arhframe:
+  var1: var
+test: arhframe
+
+@import:
+ - file2.yml #you can use a relative path to your yaml file or an absolute
+```
+
+file2.yml
+```yml
+arhframe:
+  var1: varoverride
+test2: var3
+```
+
+After parsing file1.yml, yml will look like:
+```yml
+arhframe:
+  var1: varoverride
+test: arhframe
+test2: var3
+```
