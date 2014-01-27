@@ -2,7 +2,7 @@
     "name": "arhframe/yamlarh",
     "description": "Yml injector for arhframe in standalone",
     "keywords": ["Framework", "Yaml", "Arhframe", "inject", "injector"],
-    "homepage": "https://bitbucket.org/timoun/arhframephp/wiki/Home",
+    "homepage": "https://github.com/arhframe/yamlarh",
     "type": "library",
     "license": "MIT",
     "authors": [
