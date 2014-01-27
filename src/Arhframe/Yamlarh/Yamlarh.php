@@ -113,6 +113,7 @@ class Yamlarh
                 continue;
             }
             $var = $arrayToReturn[$value];
+            global $$value;
             $varFromFile = $$value;
             if (!empty($varFromFile)) {
                 $var = $varFromFile;
