@@ -115,3 +115,29 @@ arhframe:
 test: arhframe
 test2: var3
 ```
+
+Include
+---------
+You can include a yaml file into another:
+
+file1.yml
+```yml
+arhframe:
+  var1: var
+test:
+  @include:
+    - file2.yml #you can use a relative path to your yaml file or an absolute
+```
+
+file2.yml
+```yml
+test2: var3
+```
+
+After parsing file1.yml, yml will look like:
+```yml
+arhframe:
+  var1: var
+test:
+  test2: var3
+```
