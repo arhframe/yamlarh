@@ -1,6 +1,6 @@
 {
     "name": "arhframe/yamlarh",
-    "description": "Yml injector for arhframe in standalone",
+    "description": "Inject data and import other yaml file into your yaml file.",
     "keywords": ["Framework", "Yaml", "Arhframe", "inject", "injector"],
     "homepage": "https://github.com/arhframe/yamlarh",
     "type": "library",
