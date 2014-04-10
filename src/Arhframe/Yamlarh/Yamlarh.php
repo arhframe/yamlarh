@@ -146,6 +146,7 @@ class Yamlarh
 
             }
         }
+        $this->arrayToReturn = $this->searchForInclude();
     }
     private function getFromImport($fileName, $file)
     {
@@ -163,6 +164,34 @@ class Yamlarh
         }
         $this->parseFile(new File($fileFinalName));
 
+    }
+    private function searchForInclude(&$arrayYaml = null)
+    {
+        if (empty($arrayYaml)) {
+            $arrayYaml = $this->arrayToReturn;
+        }
+        $includeYaml = null;
+        foreach ($arrayYaml as $key => $value) {
+            if (is_array($value) && $key !== '@include') {
+                $includeYaml[$key] = $this->searchForInclude($value);
+                continue;
+            }
+            if ($key !== '@include') {
+                $includeYaml[$key] = $value;
+                continue;
+            }
+            if (!is_array($value)) {
+                $value = array($value);
+            }
+            $includeYaml = array();
+            foreach ($value as $includeFile) {
+                $yamlArh = new Yamlarh($includeFile);
+                $includeYaml = array_merge($yamlArh->parse(), $arrayYaml, $includeYaml);
+            }
+
+            unset($includeYaml['@include']);
+        }
+        return $includeYaml;
     }
     public static function dump($array)
     {
