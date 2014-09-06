@@ -14,7 +14,7 @@
     ],
      "require": {
         "symfony/yaml": "2.*",
-        "arhframe/util": "1.1.*"
+        "arhframe/util": "1.2.*"
     },
     "autoload": {
         "psr-0": {
