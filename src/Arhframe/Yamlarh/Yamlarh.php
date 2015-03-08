@@ -80,7 +80,6 @@ class Yamlarh
         }
         $value = str_replace('/', '.', $value);
         $value = str_replace('.', '\\', $value);
-        echo $value;
         $object = new \ReflectionClass($value);
         if (!empty($args)) {
             return $object->newInstanceArgs($args);
