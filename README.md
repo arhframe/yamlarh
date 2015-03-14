@@ -42,7 +42,8 @@ Variable injection
 Variable injection is hierarchical, it will find in this order:
   1. In the yaml file with import
   2. In your global scope
-  3. In you constant
+  3. In your constants
+  4. In accessible variables set in yamlarh
 
 Yaml file:
 ```yml
@@ -51,6 +52,7 @@ arhframe:
   myvar2: %arhframe.myvar1%
   myvar3: %var3%
   myvar4: %VARCONSTANT%
+  myvar5: %addedInYamlarh%
 ```
 
 Php file:
@@ -73,9 +75,9 @@ Output:
               [myvar2] => test
               [myvar3] => testvar
               [myvar4] => testconstant
+              [myvar5] => var added
           )
-
-  ) 
+  )
 ```
 
 Object injection

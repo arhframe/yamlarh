@@ -1,74 +1,82 @@
 <?php
 namespace Arhframe\Yamlarh;
+
 use Arhframe\Util\File;
-use Arhframe\Yamlarh\YamlarhException;
 use Symfony\Component\Yaml\Yaml;
+
 /**
-* Yaml wrapper to permit override from module
-* allow import other yaml file by passing @import:
-*                                             - /path/of/your/file
-* allow to pass value directly from key in yaml with %keyYaml%
-* but also variable from scope or constant like this %YOURCONSTANT%
-*  and allow you to inject object in yaml like this: !! your.class(your, parameter)
-*
-* import: @import
-* key variable from yaml file: %keyYaml%
-* variable from scope ($test in scope): %test%
-* constant from scope (define("CONSTANTTEST", "testr")): %CONSTANTTEST%
-* object: !! your.class(your, parameter)
-*
-*/
+ * Yaml wrapper to permit override from module
+ * allow import other yaml file by passing @import:
+ *                                             - /path/of/your/file
+ * allow to pass value directly from key in yaml with %keyYaml%
+ * but also variable from scope or constant like this %YOURCONSTANT%
+ *  and allow you to inject object in yaml like this: !! your.class(your, parameter)
+ *
+ * import: @import
+ * key variable from yaml file: %keyYaml%
+ * variable from scope ($test in scope): %test%
+ * constant from scope (define("CONSTANTTEST", "testr")): %CONSTANTTEST%
+ * object: !! your.class(your, parameter)
+ *
+ */
 function trim_value(&$value)
 {
     $value = trim($value);
 }
+
 class Yamlarh
 {
-    private $override = false;
     private $arrayToReturn = array();
     private $fileName;
+    /**
+     * @var array
+     */
+    private $accessibleVariable = array();
+
     public function __construct($filename)
     {
         $this->fileName = $filename;
-        $this->parseFile(new File($this->fileName));
-        Yamlarh::browseVar($this->arrayToReturn);
     }
+
     public function parse()
     {
-
+        $this->parseFile(new File($this->fileName));
+        $this->browseVar($this->arrayToReturn);
         return $this->arrayToReturn;
     }
-    public static function browseVar(&$arrayToReturn, $completeArray=null)
+
+    public function browseVar(&$arrayToReturn, $completeArray = null)
     {
-        if(empty($completeArray)){
+        if (empty($completeArray)) {
             $completeArray = $arrayToReturn;
         }
-
         foreach ($arrayToReturn as $key => &$value) {
             if (is_array($value)) {
-                Yamlarh::browseVar($value, $completeArray);
+                $this->browseVar($value, $completeArray);
             } else {
-                $arrayToReturn[$key] = Yamlarh::inject($value, $arrayToReturn, $completeArray);
+                $arrayToReturn[$key] = $this->inject($value, $arrayToReturn, $completeArray);
             }
 
         }
     }
-    public static function inject($value, $arrayToReturn, $completeArray)
+
+    public function inject($value, &$arrayToReturn, $completeArray)
     {
         if (!is_string($value)) {
             return $value;
         }
         $value = trim($value);
         if (preg_match('#%([^%]*)%#', $value)) {
-            return Yamlarh::insertVar($value, $arrayToReturn, $completeArray);
+            return $this->insertVar($value, $arrayToReturn, $completeArray);
         }
-         if ($value[0] == "!" && $value[1] =="!") {
-            return Yamlarh::insertObject($value, $arrayToReturn);
+        if ($value[0] == "!" && $value[1] == "!") {
+            return $this->insertObject($value, $arrayToReturn);
         }
 
         return $value;
     }
-    public static function insertObject($value, $arrayToReturn)
+
+    public function insertObject($value, $arrayToReturn)
     {
         $value = trim(substr($value, 2));
         preg_match('#\((.*)\)$#', $value, $matchesModule);
@@ -88,7 +96,8 @@ class Yamlarh
         }
 
     }
-    public static function insertVar($value, $arrayToReturn, $completeArray)
+
+    public function insertVar($value, &$arrayToReturn, $completeArray)
     {
 
         $value = preg_replace('#%s%#', '%s%%', $value);
@@ -98,16 +107,16 @@ class Yamlarh
         $startValue = $value;
         foreach ($matchesVar as $value) {
             if ($value == "s" || ($value[0] == "s" && $value[1] == " ")) {
-                $startValue = preg_replace('#%'. preg_quote($value) .'%#', '%s', $startValue);
+                $startValue = preg_replace('#%' . preg_quote($value) . '%#', '%s', $startValue);
                 continue;
             }
             $varArray = explode('.', $value);
-            if (count($varArray)>1) {
+            if (count($varArray) > 1) {
                 $finalVar = $completeArray;
                 foreach ($varArray as $var) {
                     $finalVar = $finalVar[$var];
                 }
-                $startValue = preg_replace('#%'. preg_quote($value) .'%#', $finalVar, $startValue);
+                $startValue = preg_replace('#%' . preg_quote($value) . '%#', $finalVar, $startValue);
 
                 continue;
             }
@@ -120,50 +129,57 @@ class Yamlarh
             if (defined($value)) {
                 $var = constant($value);
             }
-            $startValue = preg_replace('#%'. preg_quote($value) .'%#', $var, $startValue);
+            if (!empty($this->accessibleVariable[$value])) {
+                $var = $this->accessibleVariable[$value];
+            }
+            $startValue = preg_replace('#%' . preg_quote($value) . '%#', $var, $startValue);
         }
 
         return $startValue;
     }
+
     private function parseFile($file)
     {
         $parsedYml = Yaml::parse($file->getContent());
+
         if (empty($parsedYml)) {
             return;
         }
         $this->arrayToReturn = $this->array_merge_recursive_distinct($this->arrayToReturn, $parsedYml);
         foreach ($this->arrayToReturn as $key => $value) {
-            if ($key == "@import") {
-                unset($this->arrayToReturn[$key]);
-                if (!is_array($value)) {
-                    $this->getFromImport($value, $file);
-                } else {
-                    foreach ($value as $fileName) {
-                        $this->getFromImport($fileName, $file);
-                    }
+            if ($key != "@import") {
+                continue;
+            }
+            unset($this->arrayToReturn[$key]);
+            if (!is_array($value)) {
+                $this->getFromImport($value, $file);
+            } else {
+                foreach ($value as $fileName) {
+                    $this->getFromImport($fileName, $file);
                 }
-
             }
         }
         $this->arrayToReturn = $this->searchForInclude();
     }
+
     private function getFromImport($fileName, $file)
     {
         if (is_file($fileName)) {
             $fileFinalName = $fileName;
         } else {
-            $fileFinalName = $file->getFolder() .'/'. $fileName;
+            $fileFinalName = $file->getFolder() . '/' . $fileName;
         }
         $fileTmp = new File($fileFinalName);
-        if(!$fileTmp->isFile()){
-            $fileFinalName = $file->getFolder() .'/'. $fileName;
+        if (!$fileTmp->isFile()) {
+            $fileFinalName = $file->getFolder() . '/' . $fileName;
         }
         if (!is_file($fileFinalName)) {
-            throw new YamlarhException("The yml file ". $file->absolute() ." can't found yml file ". $fileName ." for import");
+            throw new YamlarhException("The yml file " . $file->absolute() . " can't found yml file " . $fileName . " for import");
         }
         $this->parseFile(new File($fileFinalName));
 
     }
+
     private function searchForInclude(&$arrayYaml = null)
     {
         if (empty($arrayYaml)) {
@@ -192,28 +208,56 @@ class Yamlarh
         }
         return $includeYaml;
     }
-    public static function dump($array)
+
+    public function dump($array)
     {
         return Yaml::dump($array);
     }
-    public function getFilename(){
+
+    public function getFilename()
+    {
         return $this->fileName;
     }
-    public function array_merge_recursive_distinct( array &$array1, array &$array2 ){
-      $merged = $array1;
 
-      foreach ( $array2 as $key => &$value )
-      {
-        if ( is_array ( $value ) && isset ( $merged [$key] ) && is_array ( $merged [$key] ) )
-        {
-          $merged [$key] = $this->array_merge_recursive_distinct ( $merged [$key], $value );
-        }
-        else
-        {
-          $merged [$key] = $value;
-        }
-      }
+    public function array_merge_recursive_distinct(array &$array1, array &$array2)
+    {
+        $merged = $array1;
 
-      return $merged;
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset ($merged [$key]) && is_array($merged [$key])) {
+                $merged [$key] = $this->array_merge_recursive_distinct($merged [$key], $value);
+            } else {
+                $merged [$key] = $value;
+            }
+        }
+
+        return $merged;
     }
+
+    /**
+     * @return array
+     */
+    public function getAccessibleVariable()
+    {
+        return $this->accessibleVariable;
+    }
+
+    /**
+     * @param array $accessibleVariable
+     */
+    public function setAccessibleVariable(array $accessibleVariable)
+    {
+        $this->accessibleVariable = $accessibleVariable;
+    }
+
+    public function addAccessibleVariable($key, $var)
+    {
+        $this->accessibleVariable[$key] = $var;
+    }
+
+    public function removeAccessibleVariable($key)
+    {
+        unset($this->accessibleVariable[$key]);
+    }
+
 }
