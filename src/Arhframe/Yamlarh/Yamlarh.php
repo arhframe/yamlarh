@@ -219,6 +219,14 @@ class Yamlarh
         return $this->fileName;
     }
 
+    /**
+     * @param mixed $fileName
+     */
+    public function setFileName($fileName)
+    {
+        $this->fileName = $fileName;
+    }
+
     public function array_merge_recursive_distinct(array &$array1, array &$array2)
     {
         $merged = $array1;
