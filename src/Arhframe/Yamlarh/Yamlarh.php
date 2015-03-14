@@ -124,7 +124,12 @@ class Yamlarh
                 continue;
             }
             $var = $this->getVar($value, $arrayToReturn);
-            $startValue = preg_replace('#%' . preg_quote($value) . '%#', $var, $startValue);
+            if (is_object($var) || is_array($var)) {
+                $startValue = $var;
+            } else {
+                $startValue = preg_replace('#%' . preg_quote($value) . '%#', $var, $startValue);
+            }
+
         }
 
         return $startValue;
