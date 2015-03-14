@@ -40,6 +40,7 @@ class Yamlarh
 
     public function parse()
     {
+        $this->arrayToReturn = array();
         $this->parseFile(new File($this->fileName));
         $this->browseVar($this->arrayToReturn);
         return $this->arrayToReturn;
