@@ -116,26 +116,58 @@ class Yamlarh
                 foreach ($varArray as $var) {
                     $finalVar = $finalVar[$var];
                 }
+                if (empty($finalVar)) {
+                    $finalVar = $this->getVar($varArray, $arrayToReturn);
+                }
                 $startValue = preg_replace('#%' . preg_quote($value) . '%#', $finalVar, $startValue);
 
                 continue;
             }
-            $var = $arrayToReturn[$value];
-            global $$value;
-            $varFromFile = $$value;
-            if (!empty($varFromFile)) {
-                $var = $varFromFile;
-            }
-            if (defined($value)) {
-                $var = constant($value);
-            }
-            if (!empty($this->accessibleVariable[$value])) {
-                $var = $this->accessibleVariable[$value];
-            }
+            $var = $this->getVar($value, $arrayToReturn);
             $startValue = preg_replace('#%' . preg_quote($value) . '%#', $var, $startValue);
         }
 
         return $startValue;
+    }
+
+    private function getVar($value, &$arrayToReturn)
+    {
+        $allValues = null;
+        if (is_array($value)) {
+            $allValues = $value;
+            $value = $value[0];
+        }
+        $var = $arrayToReturn[$value];
+        global $$value;
+        $varFromFile = $$value;
+        if (!empty($varFromFile)) {
+            $var = $varFromFile;
+        }
+        if (defined($value)) {
+            $var = constant($value);
+        }
+        if (!empty($this->accessibleVariable[$value])) {
+            $var = $this->accessibleVariable[$value];
+        }
+
+        $var = $this->getComplexeVar($var, $allValues);
+        return $var;
+    }
+
+    private function getComplexeVar($var, $values)
+    {
+        if (empty($values)) {
+            return $var;
+        }
+        $values = array_slice($values, 1);
+        if (is_object($var) && !empty($values)) {
+            $get = "get" . ucfirst($values[0]);
+            return $this->getComplexeVar($var->$get(), $values);
+        }
+        if (is_array($var) && !empty($values)) {
+            return $this->getComplexeVar($var[$values[0]], $values);
+        }
+        return $var;
     }
 
     private function parseFile($file)
