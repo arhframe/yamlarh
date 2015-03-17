@@ -1,5 +1,6 @@
 Yamlarh
 =======
+[![Build Status](https://travis-ci.org/arhframe/yamlarh.svg)](https://travis-ci.org/arhframe/yamlarh)
 
 Yamlarh is now just a name, with this tool you can inject value or date in a formatted file (as `json`, `xml`, `yml`).
 You can inject into your formatted file:
