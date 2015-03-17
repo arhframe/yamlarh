@@ -120,6 +120,7 @@ arhframe:
 Import
 ---------
 Import are also hierarchical the last one imported will override the others.
+
 Use yar-import by default in your file:
 
 file1.xml
@@ -175,15 +176,20 @@ test:
   test2: var3
 ```
 
+**Note**: You can look at these [tests](https://github.com/arhframe/yamlarh/blob/master/tests/Arhframe/Yamlarh/YamlarhTest.php) to know what you can also do.
+
 Extensible
 ==========
 
 Add a node
 ----------
 After parsing, injecting and importing yamlarh can run your extension.
+
 You have to create a new class which extends `Arhframe\Yamlarh\YamlarhNode` and add it to your yamlarh instance like this:
 ```php
 //create your yamalarh instance before
 $yamlarh->addNode("myNodeName", new MyYamlarhNode());
 ```
 Now you can use (for this example) `yar-myNodeName` in your formated file.
+
+**Note**: the `yar-include` is a node take look at [IncludeYamlarhNode](https://github.com/arhframe/yamlarh/blob/master/src/Arhframe/Yamlarh/YamlarhNode/IncludeYamlarhNode.php) to have a good example.
