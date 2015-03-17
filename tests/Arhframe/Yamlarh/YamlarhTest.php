@@ -13,6 +13,9 @@
 namespace Arhframe\Yamlarh;
 
 
+use Arhframe\Yamlarh\Fake\Foo;
+use Arhframe\Yamlarh\YamlarhNode\IncludeYamlarhNode;
+
 class YamlarhTest extends \PHPUnit_Framework_TestCase
 {
     public function testSimple()
@@ -64,4 +67,39 @@ class YamlarhTest extends \PHPUnit_Framework_TestCase
         $array = $yamlarh->parse();
         $this->assertEquals($expected, $array);
     }
+
+    public function testObject()
+    {
+        $yamlarh = new Yamlarh(__DIR__ . '/resource/testobject.yml');
+        $yamlarh->addAccessibleVariable('foo', new Foo("nothing"));
+        $array = $yamlarh->parse();
+        $this->assertInstanceOf("Arhframe\\Yamlarh\\Fake\\Foo", $array['test']);
+        $this->assertEquals("data", $array["foo"]);
+    }
+
+    public function testNode()
+    {
+        $yamlarh = new Yamlarh(__DIR__ . '/resource/testobject.yml');
+        $this->assertArrayHasKey("include", $yamlarh->getNodes());
+        $yamlarh->deleteNode("include");
+        $this->assertArrayNotHasKey("include", $yamlarh->getNodes());
+
+        $yamlarh->setNodes(array("include" => new IncludeYamlarhNode()));
+        $this->assertArrayHasKey("include", $yamlarh->getNodes());
+
+    }
+
+    public function testNewParameter()
+    {
+        $expected = array(
+            "arhframe" => array("var1" => "varoverride"),
+            "test" => "arhframe",
+            "test2" => "var3"
+        );
+        $yamlarh = new Yamlarh(__DIR__ . '/resource/newparameter/file1.xml');
+        $yamlarh->setParamaterKey("sp");
+        $array = $yamlarh->parse();
+        $this->assertEquals($expected, $array);
+    }
+
 }

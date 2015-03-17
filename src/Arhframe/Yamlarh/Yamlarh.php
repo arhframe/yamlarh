@@ -4,7 +4,6 @@ namespace Arhframe\Yamlarh;
 use Arhframe\Util\File;
 use Arhframe\Yamlarh\YamlarhNode\AbstractYamlarhNode;
 use Arhframe\Yamlarh\YamlarhNode\IncludeYamlarhNode;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Yaml wrapper to permit override from module
@@ -161,6 +160,10 @@ class Yamlarh
             if (count($varArray) > 1) {
                 $finalVar = $completeArray;
                 foreach ($varArray as $var) {
+                    if (!isset($finalVar[$var])) {
+                        $finalVar = null;
+                        break;
+                    }
                     $finalVar = $finalVar[$var];
                 }
                 if (empty($finalVar)) {
@@ -285,16 +288,6 @@ class Yamlarh
 
     }
 
-
-    /**
-     * @param $array
-     * @return string
-     */
-    public function dump($array)
-    {
-        return Yaml::dump($array);
-    }
-
     /**
      * @return mixed
      */
@@ -395,6 +388,12 @@ class Yamlarh
     {
         if (empty($paramaterKey)) {
             return;
+        }
+        if (preg_match("#" . preg_quote(":/\\") . "#i", $paramaterKey)) {
+            throw new \Exception(sprintf("Yamlarh error: invalid parameter key '%s' must not contains ':', '/' or '\\'", $paramaterKey));
+        }
+        if ($paramaterKey[strlen($paramaterKey) - 1] != '-') {
+            $paramaterKey = $paramaterKey . '-';
         }
         $this->paramaterKey = $paramaterKey;
     }

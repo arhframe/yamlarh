@@ -1,0 +1,2 @@
+test: !! Arhframe.Yamlarh.Fake.Foo(null)
+foo: %foo.value%

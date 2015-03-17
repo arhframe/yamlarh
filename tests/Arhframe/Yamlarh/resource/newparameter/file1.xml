@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<yamlarh>
+    <arhframe>
+        <var1>var</var1>
+    </arhframe>
+    <test>arhframe</test>
+    <sp-import>file2.yml</sp-import>
+</yamlarh>
