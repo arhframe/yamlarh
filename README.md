@@ -1,14 +1,14 @@
 Yamlarh
 =======
 
-Yml injector for arhframe in standalone.
-You can inject into your yaml:
+Yamlarh is now just a name, with this tool you can inject value or date in a formatted file (as `json`, `xml`, `yml`).
+You can inject into your formatted file:
   * object
   * constant from scope 
   * Variable from global scope
-  * Variable from yaml file
+  * Variable from formatted file
 
-You can also import other yaml inside a yaml file for overriding
+You can also import other formatted file inside a formatted file file for overriding
 
 Installation
 =======
@@ -29,7 +29,7 @@ Usage
 ```php
 use Arhframe\Yamlarh\Yamlarh;
 
-$yamlarh = new Yamlarh(__DIR__.'/path/to/yaml/file');
+$yamlarh = new Yamlarh(__DIR__.'/path/to/formatted/file');
 $array = $yamlarh->parse();
 ```
 
@@ -55,12 +55,40 @@ arhframe:
   myvar5: %addedInYamlarh%
 ```
 
+Or in xml:
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<yamlarh>
+    <arhframe>
+        <myvar1>test</myvar1>
+        <myvar2>%arhframe.myvar1%</myvar2>
+        <myvar3>%var3%</myvar3>
+        <myvar4>%VARCONSTANT%</myvar4>
+        <myvar5>%addedInYamlarh%</myvar5>
+    </arhframe>
+</yamlarh>
+```
+
+Or in json:
+```json
+{
+  "arhframe": {
+    "myvar1": "test",
+    "myvar2": "%arhframe.myvar1%",
+    "myvar3": "%var3%",
+    "myvar4": "%VARCONSTANT%",
+    "myvar5": "%addedInYamlarh%"
+  }
+}
+```
+
 Php file:
 ```php
 use Arhframe\Yamlarh\Yamlarh;
 $var3 = 'testvar';
 define('VARCONSTANT', 'testconstant');
 $yamlarh = new Yamlarh(__DIR__.'/test.yml');
+$yamlarh->addAccessibleVariable("addedInYamlarh", "var added");
 $array = $yamlarh->parse();
 echo print_r($array);
 ```
@@ -91,16 +119,18 @@ arhframe:
 Import
 ---------
 Import are also hierarchical the last one imported will override the others.
-Use @import in your file: 
+Use yar-import by default in your file:
 
-file1.yml
+file1.xml
 ```yml
-arhframe:
-  var1: var
-test: arhframe
-
-@import:
- - file2.yml #you can use a relative path to your yaml file or an absolute
+<?xml version="1.0" encoding="UTF-8" ?>
+<yamlarh>
+    <arhframe>
+        <var1>var</var1>
+    </arhframe>
+    <test>arhframe</test>
+    <yar-import>file2.yml</yar-import> <!-- you can use a relative path to your yaml file or an absolute -->
+</yamlarh>
 ```
 
 file2.yml
@@ -110,7 +140,7 @@ arhframe:
 test2: var3
 ```
 
-After parsing file1.yml, yml will look like:
+After parsing file1.xml, output will look like (just to have a better format it's show yml):
 ```yml
 arhframe:
   var1: varoverride
@@ -127,7 +157,7 @@ file1.yml
 arhframe:
   var1: var
 test:
-  @include:
+  yar-include:
     - file2.yml #you can use a relative path to your yaml file or an absolute
 ```
 
@@ -136,10 +166,23 @@ file2.yml
 test2: var3
 ```
 
-After parsing file1.yml, yml will look like:
+After parsing file1.yml, output will look like:
 ```yml
 arhframe:
   var1: var
 test:
   test2: var3
 ```
+
+Extensible
+==========
+
+Add a node
+----------
+After parsing, injecting and importing yamlarh can run your extension.
+You have to create a new class which extends `Arhframe\Yamlarh\YamlarhNode` and add it to your yamlarh instance like this:
+```php
+//create your yamalarh instance before
+$yamlarh->addNode("myNodeName", new MyYamlarhNode());
+```
+Now you can use (for this example) `yar-myNodeName` in your formated file.

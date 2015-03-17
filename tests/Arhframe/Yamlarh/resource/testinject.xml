@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<yamlarh>
+    <arhframe>
+        <myvar1>test</myvar1>
+        <myvar2>%arhframe.myvar1%</myvar2>
+        <myvar3>%var3%</myvar3>
+        <myvar4>%VARCONSTANT%</myvar4>
+        <myvar5>%addedInYamlarh%</myvar5>
+    </arhframe>
+</yamlarh>

@@ -1,0 +1,9 @@
+{
+  "arhframe": {
+    "myvar1": "test",
+    "myvar2": "%arhframe.myvar1%",
+    "myvar3": "%var3%",
+    "myvar4": "%VARCONSTANT%",
+    "myvar5": "%addedInYamlarh%"
+  }
+}
