@@ -104,7 +104,7 @@ class Yamlarh
             return $this->insertVar($value, $arrayToReturn, $completeArray);
         }
         if ($value[0] == "!" && $value[1] == "!") {
-            return $this->insertObject($value, $arrayToReturn);
+            return $this->insertObject($value);
         }
 
         return $value;
@@ -237,7 +237,6 @@ class Yamlarh
 
     /**
      * @param File $file
-     * @throws YamlarhException
      */
     private function parseFile(File $file)
     {
@@ -268,7 +267,7 @@ class Yamlarh
     /**
      * @param $fileName
      * @param File $file
-     * @throws YamlarhException
+     * @throws \Exception
      */
     private function getFromImport($fileName, File $file)
     {
@@ -282,7 +281,7 @@ class Yamlarh
             $fileFinalName = $file->getFolder() . '/' . $fileName;
         }
         if (!is_file($fileFinalName)) {
-            throw new YamlarhException("The yml file " . $file->absolute() . " can't found yml file " . $fileName . " for import");
+            throw new \Exception("The yml file " . $file->absolute() . " can't found yml file " . $fileName . " for import");
         }
         $this->parseFile(new File($fileFinalName));
 
