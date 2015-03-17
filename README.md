@@ -2,7 +2,8 @@ Yamlarh
 =======
 [![Build Status](https://travis-ci.org/arhframe/yamlarh.svg)](https://travis-ci.org/arhframe/yamlarh) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master)
 
-Yamlarh is now just a name, with this tool you can inject value or date in a formatted file (as `json`, `xml`, `yml`).
+Yamlarh is now just a name, with this tool you can inject value or date in a formatted file (as `json`, `xml` or `yaml`).
+
 You can inject into your formatted file:
   * object
   * constant from scope 
