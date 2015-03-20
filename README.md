@@ -1,6 +1,6 @@
 Yamlarh
 =======
-[![Build Status](https://travis-ci.org/arhframe/yamlarh.svg)](https://travis-ci.org/arhframe/yamlarh) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master)
+[![Build Status](https://travis-ci.org/arhframe/yamlarh.svg)](https://travis-ci.org/arhframe/yamlarh) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/arhframe/yamlarh/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/arhframe/yamlarh/?branch=master) [![SensioLabsInsight](https://insight.sensiolabs.com/projects/12e82046-15e5-482a-bc25-7b28fe0d4efb/small.png)](https://insight.sensiolabs.com/projects/12e82046-15e5-482a-bc25-7b28fe0d4efb)
 
 Yamlarh is now just a name, with this tool you can inject value or date in a formatted file (as `json`, `xml` or `yaml`).
 
