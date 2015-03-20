@@ -47,7 +47,7 @@ class IncludeYamlarhNode extends AbstractYamlarhNode
                 $currentFile = new File($this->yamlarh->getFilename());
                 $includeFile = new File($includeFile);
                 if (!$includeFile->isFile()) {
-                    $includeFile->setFolder($currentFile->getFolder());
+                    $includeFile->setFolder($currentFile->getFolder() . $includeFile->getFolder());
                 }
                 $yamlArh = new Yamlarh($includeFile->absolute());
                 $includeYaml = array_merge($yamlArh->parse(), $arrayYaml, $includeYaml);

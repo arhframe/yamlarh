@@ -4,6 +4,6 @@
         <var1>var</var1>
     </arhframe>
     <test>
-        <yar-include>file2.json</yar-include>
+        <yar-include>folderinclude/file2.json</yar-include>
     </test>
 </yamlarh>
