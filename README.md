@@ -184,7 +184,7 @@ Extensible
 
 Add a node
 ----------
-After parsing, injecting and importing yamlarh can run your extension.
+After parsing and importing but before injecting yamlarh can run your extension.
 
 You have to create a new class which extends `Arhframe\Yamlarh\YamlarhNode` and add it to your yamlarh instance like this:
 ```php
