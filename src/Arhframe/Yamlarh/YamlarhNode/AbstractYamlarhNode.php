@@ -63,4 +63,18 @@ abstract class AbstractYamlarhNode
 
     abstract public function run();
 
+    /**
+     * @param $filename
+     * @return Yamlarh
+     * @throws \Exception
+     */
+    protected function getNewYamlarh($filename)
+    {
+        $yamlarh = new Yamlarh($filename);
+        $yamlarh->setAccessibleVariable($this->yamlarh->getAccessibleVariable());
+        $yamlarh->setParamaterKey($this->yamlarh->getParamaterKey());
+        $yamlarh->setNodes($this->yamlarh->getNodes());
+        return $yamlarh;
+    }
+
 }
