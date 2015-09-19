@@ -23,6 +23,10 @@ use Arhframe\Yamlarh\YamlarhNode\IncludeYamlarhNode;
 class Yamlarh
 {
     /**
+     *
+     */
+    const IMPORT_KEY = "import";
+    /**
      * @var array
      */
     private $arrayToReturn = array();
@@ -34,10 +38,6 @@ class Yamlarh
      * @var string
      */
     private $paramaterKey = "yar-";
-    /**
-     *
-     */
-    const IMPORT_KEY = "import";
     /**
      * @var array
      */
@@ -58,6 +58,13 @@ class Yamlarh
 
     }
 
+    public function addNode($nodeName, AbstractYamlarhNode $node)
+    {
+        $this->nodes[$nodeName] = $node;
+        $node->setNodeName($nodeName);
+        $node->setYamlarh($this);
+    }
+
     /**
      * @return array
      */
@@ -67,6 +74,78 @@ class Yamlarh
         $this->parseFile(new File($this->fileName));
         $this->browseVar($this->arrayToReturn);
         return $this->arrayToReturn;
+    }
+
+    /**
+     * @param File $file
+     */
+    private function parseFile(File $file)
+    {
+        $parsedYml = FileLoader::loadFile($file);
+
+        if (empty($parsedYml)) {
+            return;
+        }
+        $this->arrayToReturn = $this->arrayMergeRecursiveDistinct($this->arrayToReturn, $parsedYml);
+        foreach ($this->arrayToReturn as $key => $value) {
+            if ($key != $this->paramaterKey . Yamlarh::IMPORT_KEY) {
+                continue;
+            }
+            unset($this->arrayToReturn[$key]);
+            if (!is_array($value)) {
+                $this->getFromImport($value, $file);
+            } else {
+                foreach ($value as $fileName) {
+                    $this->getFromImport($fileName, $file);
+                }
+            }
+        }
+        foreach ($this->nodes as $node) {
+            $this->arrayToReturn = $node->run();
+        }
+    }
+
+    /**
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    public function arrayMergeRecursiveDistinct(array &$array1, array &$array2)
+    {
+        $merged = $array1;
+
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset ($merged [$key]) && is_array($merged [$key])) {
+                $merged [$key] = $this->arrayMergeRecursiveDistinct($merged [$key], $value);
+            } else {
+                $merged [$key] = $value;
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * @param $fileName
+     * @param File $file
+     * @throws \Exception
+     */
+    private function getFromImport($fileName, File $file)
+    {
+        if (is_file($fileName)) {
+            $fileFinalName = $fileName;
+        } else {
+            $fileFinalName = $file->getFolder() . '/' . $fileName;
+        }
+        $fileTmp = new File($fileFinalName);
+        if (!$fileTmp->isFile()) {
+            $fileFinalName = $file->getFolder() . '/' . $fileName;
+        }
+        if (!is_file($fileFinalName)) {
+            throw new \Exception("The yml file " . $file->absolute() . " can't found yml file " . $fileName . " for import");
+        }
+        $this->parseFile(new File($fileFinalName));
+
     }
 
     /**
@@ -108,33 +187,6 @@ class Yamlarh
         }
 
         return $value;
-    }
-
-    /**
-     * @param $value
-     * @return object
-     */
-    public function insertObject($value)
-    {
-        $value = trim(substr($value, 2));
-        preg_match('#\((.*)\)$#', $value, $matchesModule);
-        $args = null;
-        $value = preg_replace('#\((.*)\)$#', '', $value);
-        if (!empty($matchesModule[1])) {
-            $args = explode(',', $matchesModule[1]);
-            array_walk($args, function (&$value) {
-                $value = trim($value);
-            });
-        }
-        $value = str_replace('/', '.', $value);
-        $value = str_replace('.', '\\', $value);
-        $object = new \ReflectionClass($value);
-        if (!empty($args)) {
-            return $object->newInstanceArgs($args);
-        } else {
-            return $object->newInstance();
-        }
-
     }
 
     /**
@@ -197,7 +249,11 @@ class Yamlarh
             $allValues = $value;
             $value = $value[0];
         }
-        $var = $arrayToReturn[$value];
+        if (isset($arrayToReturn[$value])) {
+            $var = $arrayToReturn[$value];
+        } else {
+            $var = null;
+        }
         global $$value;
         $varFromFile = $$value;
         if (!empty($varFromFile)) {
@@ -236,54 +292,29 @@ class Yamlarh
     }
 
     /**
-     * @param File $file
+     * @param $value
+     * @return object
      */
-    private function parseFile(File $file)
+    public function insertObject($value)
     {
-        $parsedYml = FileLoader::loadFile($file);
-
-        if (empty($parsedYml)) {
-            return;
+        $value = trim(substr($value, 2));
+        preg_match('#\((.*)\)$#', $value, $matchesModule);
+        $args = null;
+        $value = preg_replace('#\((.*)\)$#', '', $value);
+        if (!empty($matchesModule[1])) {
+            $args = explode(',', $matchesModule[1]);
+            array_walk($args, function (&$value) {
+                $value = trim($value);
+            });
         }
-        $this->arrayToReturn = $this->arrayMergeRecursiveDistinct($this->arrayToReturn, $parsedYml);
-        foreach ($this->arrayToReturn as $key => $value) {
-            if ($key != $this->paramaterKey . Yamlarh::IMPORT_KEY) {
-                continue;
-            }
-            unset($this->arrayToReturn[$key]);
-            if (!is_array($value)) {
-                $this->getFromImport($value, $file);
-            } else {
-                foreach ($value as $fileName) {
-                    $this->getFromImport($fileName, $file);
-                }
-            }
-        }
-        foreach ($this->nodes as $node) {
-            $this->arrayToReturn = $node->run();
-        }
-    }
-
-    /**
-     * @param $fileName
-     * @param File $file
-     * @throws \Exception
-     */
-    private function getFromImport($fileName, File $file)
-    {
-        if (is_file($fileName)) {
-            $fileFinalName = $fileName;
+        $value = str_replace('/', '.', $value);
+        $value = str_replace('.', '\\', $value);
+        $object = new \ReflectionClass($value);
+        if (!empty($args)) {
+            return $object->newInstanceArgs($args);
         } else {
-            $fileFinalName = $file->getFolder() . '/' . $fileName;
+            return $object->newInstance();
         }
-        $fileTmp = new File($fileFinalName);
-        if (!$fileTmp->isFile()) {
-            $fileFinalName = $file->getFolder() . '/' . $fileName;
-        }
-        if (!is_file($fileFinalName)) {
-            throw new \Exception("The yml file " . $file->absolute() . " can't found yml file " . $fileName . " for import");
-        }
-        $this->parseFile(new File($fileFinalName));
 
     }
 
@@ -301,26 +332,6 @@ class Yamlarh
     public function setFileName($fileName)
     {
         $this->fileName = $fileName;
-    }
-
-    /**
-     * @param array $array1
-     * @param array $array2
-     * @return array
-     */
-    public function arrayMergeRecursiveDistinct(array &$array1, array &$array2)
-    {
-        $merged = $array1;
-
-        foreach ($array2 as $key => &$value) {
-            if (is_array($value) && isset ($merged [$key]) && is_array($merged [$key])) {
-                $merged [$key] = $this->arrayMergeRecursiveDistinct($merged [$key], $value);
-            } else {
-                $merged [$key] = $value;
-            }
-        }
-
-        return $merged;
     }
 
     /**
@@ -413,13 +424,6 @@ class Yamlarh
         foreach ($nodes as $nodeName => $node) {
             $this->addNode($nodeName, $node);
         }
-    }
-
-    public function addNode($nodeName, AbstractYamlarhNode $node)
-    {
-        $this->nodes[$nodeName] = $node;
-        $node->setNodeName($nodeName);
-        $node->setYamlarh($this);
     }
 
     public function deleteNode($nodeName)
